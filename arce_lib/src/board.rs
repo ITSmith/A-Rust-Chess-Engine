@@ -24,9 +24,9 @@ pub struct Board {
     pub b_queens: BitBoard,
     pub b_king: BitBoard,
     // Occupancies
-    pub white: BitBoard,
-    pub black: BitBoard,
-    pub both: BitBoard,
+    pub w_occupancies: BitBoard,
+    pub b_occupancies: BitBoard,
+    pub a_occupancies: BitBoard,
 
     pub side: Side,
     pub en_passant: Option<Square>,
@@ -101,9 +101,44 @@ impl Board {
             None
         };
 
-        // if side == Side::White {
-        //     self.
-        // }
+        // Handle castling
+        if castling {
+            match target_square {
+                Square::C1 => {
+                    // White queenside
+                    // Move A1 rook
+                    self.w_rooks.pop_bit(Square::A1);
+                    self.w_rooks.set_bit(Square::D1);
+                }
+                Square::G1 => {
+                    // White kingside
+                    // Move H1 rook
+                    self.w_rooks.pop_bit(Square::H1);
+                    self.w_rooks.set_bit(Square::F1);
+                }
+                Square::C8 => {
+                    // Black queenside
+                    // Move A8 rook
+                    self.b_rooks.pop_bit(Square::A8);
+                    self.b_rooks.set_bit(Square::D8);
+                }
+                Square::G8 => {
+                    // Black kingnside
+                    // Move H8 rook
+                    self.b_rooks.pop_bit(Square::H8);
+                    self.b_rooks.set_bit(Square::F8);
+                }
+                invalid => panic!("'{}' is not a valid castling square", invalid),
+            }
+        }
+        // Update castle rights
+        self.castle.update(source_square);
+        self.castle.update(target_square);
+
+        // Update occupancies
+        if self.side == Side::White {
+            self.w_occupancies;
+        }
         true
     }
 
@@ -158,16 +193,16 @@ impl Board {
     #[inline]
     pub fn get_side_bitboard(&self, side: Side) -> BitBoard {
         match side {
-            Side::White => self.white,
-            Side::Black => self.black,
+            Side::White => self.w_occupancies,
+            Side::Black => self.b_occupancies,
         }
     }
 
     #[inline]
     pub fn get_side_bitboard_mut(&mut self, side: Side) -> &mut BitBoard {
         match side {
-            Side::White => &mut self.white,
-            Side::Black => &mut self.black,
+            Side::White => &mut self.w_occupancies,
+            Side::Black => &mut self.b_occupancies,
         }
     }
 

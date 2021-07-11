@@ -397,7 +397,7 @@ impl MoveGen {
             bitboard.pop_bit(source_square);
         }
         // Kingside castling possible
-        if board.castle.wk {
+        if board.castle.wk() {
             // Make sure squares between king and king's rook are empty
             if board.both.get_bit(Square::F1).is_empty()
                 && board.both.get_bit(Square::G1).is_empty()
@@ -421,7 +421,7 @@ impl MoveGen {
             }
         }
         // Queenside castling possible
-        if board.castle.wq {
+        if board.castle.wq() {
             // Make sure squares between king and queen's rook are empty
             if board.both.get_bit(Square::B1).is_empty()
                 && board.both.get_bit(Square::C1).is_empty()
@@ -815,7 +815,7 @@ impl MoveGen {
             bitboard.pop_bit(source_square);
         }
         // Kingside castling possible
-        if board.castle.bk {
+        if board.castle.bk() {
             // Make sure squares between king and  king's rook are empty
             if board.both.get_bit(Square::F8).is_empty()
                 && board.both.get_bit(Square::G8).is_empty()
@@ -839,7 +839,7 @@ impl MoveGen {
             }
         }
         // Queenside castling possible
-        if board.castle.bq {
+        if board.castle.bq() {
             // Make sure squares between king and queen's rook are empty
             if board.both.get_bit(Square::B8).is_empty()
                 && board.both.get_bit(Square::C8).is_empty()

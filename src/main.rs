@@ -9,14 +9,16 @@ fn main() {
 
     let mut b =
         parse("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1").unwrap();
-    let mut ml = MoveList::with_capacity(40);
+    let mut ml = MoveList::with_capacity(50);
     mg.generate_moves(&b, &mut ml);
     ml.print_move_list();
     b.print_board();
-    let m = ml[1];
+    let m = ml[46];
     println!("{}", m);
     b.make_move(m);
     b.print_board();
+
+    println!("White:\n{}\nBlack{}\nBoth:\n{}", b.white, b.black, b.both);
 
     let elapsed = now.elapsed();
     println!("Elapsed: {:.2?}", elapsed);
