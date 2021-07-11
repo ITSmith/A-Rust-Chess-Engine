@@ -52,14 +52,13 @@ impl Board {
 
         // Handle captures
         if capture {
-            let pieces = if self.side == Side::White {
+            let opponent_pieces = if self.side == Side::White {
                 BLACK_PIECES
             } else {
                 WHITE_PIECES
             };
-
             // Remove captured piece
-            for piece in pieces {
+            for piece in opponent_pieces {
                 if self
                     .get_piece_bitboard(piece)
                     .get_bit(target_square)
@@ -70,15 +69,41 @@ impl Board {
                 }
             }
         }
+
         // Handle promotions
         if promoted_piece != Piece::None {
             // Remove pawn
             self.get_piece_bitboard_mut(piece).pop_bit(target_square);
             // Set promeoted piece
-            self.get_piece_bitboard(promoted_piece)
+            self.get_piece_bitboard_mut(promoted_piece)
                 .set_bit(target_square);
         }
 
+        // Handle en passant
+        if en_passant {
+            match self.side {
+                Side::White => self
+                    .b_pawns
+                    .pop_bit(Square::from_u8_unchecked(target_square as u8 - 8)),
+                Side::Black => self
+                    .w_pawns
+                    .pop_bit(Square::from_u8_unchecked(target_square as u8 + 8)),
+            }
+        }
+
+        // Handle double pawn push
+        self.en_passant = if double_push {
+            Some(match self.side {
+                Side::White => Square::from_u8_unchecked(target_square as u8 - 8),
+                Side::Black => Square::from_u8_unchecked(target_square as u8 + 8),
+            })
+        } else {
+            None
+        };
+
+        // if side == Side::White {
+        //     self.
+        // }
         true
     }
 

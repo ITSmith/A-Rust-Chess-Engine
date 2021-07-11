@@ -30,10 +30,11 @@ impl MoveList {
     }
 
     pub fn print_move_list(&self) {
-        println!(" move:  piece:  prompted:  capture:  double:  en passant:  castling:");
-        self.moves.iter().for_each(|m| {
+        println!(" idx:  move:  piece:  prompted:  capture:  double:  en passant:  castling:");
+        self.moves.iter().enumerate().for_each(|(i, m)| {
             println!(
-                " {:7}{:9}{:11}{:10}{:9}{:13}{}",
+                " {:03}   {:7}{:8}{:11}{:10}{:9}{:13}{}",
+                i,
                 m.to_string(),
                 m.extract_piece().to_unicode(),
                 m.extract_promoted_piece().to_unicode(),
