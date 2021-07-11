@@ -1,5 +1,5 @@
 use crate::{
-    attack_tables::{
+    attacks::{
         bishops::gen_bishop_attacks,
         magics::{
             bishop::{BISHOP_MAGIC_NUMBERS, BISHOP_RELEVANT_BITS},
@@ -8,6 +8,7 @@ use crate::{
         rooks::gen_rook_attacks,
     },
     bitboard::BitBoard,
+    board::Board,
     side::Side,
     square::{Square, SQUARES},
 };
@@ -33,28 +34,28 @@ const NON_AB_FILE: BitBoard = BitBoard(18229723555195321596);
 #[allow(clippy::unreadable_literal)]
 const NON_GH_FILE: BitBoard = BitBoard(4557430888798830399);
 
-pub struct AttackTables {
-    w_pawn: Box<[BitBoard; 64]>,
-    b_pawn: Box<[BitBoard; 64]>,
-    knight: Box<[BitBoard; 64]>,
-    king: Box<[BitBoard; 64]>,
-    bishop_masks: Box<[BitBoard; 64]>,
-    rook_masks: Box<[BitBoard; 64]>,
+pub struct Attacks {
+    w_pawn: [BitBoard; 64],
+    b_pawn: [BitBoard; 64],
+    knight: [BitBoard; 64],
+    king: [BitBoard; 64],
+    bishop_masks: [BitBoard; 64],
+    rook_masks: [BitBoard; 64],
     bishop_attacks: Box<[[BitBoard; 512]; 64]>,
     rook_attacks: Box<[[BitBoard; 4096]]>,
 }
 
-impl AttackTables {
-    pub fn gen_attacks() -> AttackTables {
+impl Attacks {
+    pub fn gen() -> Attacks {
         // Leapers
-        let mut w_pawn = Box::new([BitBoard::empty(); 64]);
-        let mut b_pawn = Box::new([BitBoard::empty(); 64]);
-        let mut knight = Box::new([BitBoard::empty(); 64]);
-        let mut king = Box::new([BitBoard::empty(); 64]);
+        let mut w_pawn = [BitBoard::empty(); 64];
+        let mut b_pawn = [BitBoard::empty(); 64];
+        let mut knight = [BitBoard::empty(); 64];
+        let mut king = [BitBoard::empty(); 64];
 
         // Sliders
-        let mut bishop_masks = Box::new([BitBoard::empty(); 64]);
-        let mut rook_masks = Box::new([BitBoard::empty(); 64]);
+        let mut bishop_masks = [BitBoard::empty(); 64];
+        let mut rook_masks = [BitBoard::empty(); 64];
         let mut bishop_attacks = Box::new([[BitBoard::empty(); 512]; 64]);
         let mut rook_attacks = vec![[BitBoard::empty(); 4096]; 64].into_boxed_slice();
 
@@ -96,7 +97,7 @@ impl AttackTables {
             }
         }
 
-        AttackTables {
+        Attacks {
             w_pawn,
             b_pawn,
             knight,
@@ -149,5 +150,48 @@ impl AttackTables {
     #[inline]
     pub fn get_queen_attacks(&self, square: Square, occupancy: BitBoard) -> BitBoard {
         self.get_bishop_attacks(square, occupancy) | self.get_rook_attacks(square, occupancy)
+    }
+
+    #[inline]
+    pub fn is_square_attacked(&self, board: &Board, square: Square, side: Side) -> bool {
+        if side == Side::White {
+            (self.get_b_pawn_attacks(square) & board.w_pawns).is_not_empty()
+                || (self.get_knight_attacks(square) & board.w_knights).is_not_empty()
+                || (self.get_bishop_attacks(square, board.all_occupancies) & board.w_bishops)
+                    .is_not_empty()
+                || (self.get_rook_attacks(square, board.all_occupancies) & board.w_rooks)
+                    .is_not_empty()
+                || (self.get_queen_attacks(square, board.all_occupancies) & board.w_queens)
+                    .is_not_empty()
+                || (self.get_king_attacks(square) & board.w_king).is_not_empty()
+        } else {
+            (self.get_w_pawn_attacks(square) & board.b_pawns).is_not_empty()
+                || (self.get_knight_attacks(square) & board.b_knights).is_not_empty()
+                || (self.get_bishop_attacks(square, board.all_occupancies) & board.b_bishops)
+                    .is_not_empty()
+                || (self.get_rook_attacks(square, board.all_occupancies) & board.b_rooks)
+                    .is_not_empty()
+                || (self.get_queen_attacks(square, board.all_occupancies) & board.b_queens)
+                    .is_not_empty()
+                || (self.get_king_attacks(square) & board.b_king).is_not_empty()
+        }
+    }
+
+    pub fn print_attacked_squares(&self, board: &Board, side: Side) {
+        for r in (0..8).rev() {
+            print!(" {}", r + 1);
+            for f in 0..8 {
+                let square = Square::from_fr_unchecked(f, r);
+                let is_attacked = if self.is_square_attacked(board, square, side) {
+                    1
+                } else {
+                    0
+                };
+
+                print!(" {}", is_attacked);
+            }
+            println!();
+        }
+        println!("   A B C D E F G H");
     }
 }

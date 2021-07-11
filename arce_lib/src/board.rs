@@ -26,7 +26,7 @@ pub struct Board {
     // Occupancies
     pub w_occupancies: BitBoard,
     pub b_occupancies: BitBoard,
-    pub a_occupancies: BitBoard,
+    pub all_occupancies: BitBoard,
 
     pub side: Side,
     pub en_passant: Option<Square>,
@@ -136,9 +136,32 @@ impl Board {
         self.castle.update(target_square);
 
         // Update occupancies
-        if self.side == Side::White {
-            self.w_occupancies;
-        }
+        self.w_occupancies = self.w_pawns
+            | self.w_knights
+            | self.w_bishops
+            | self.w_rooks
+            | self.w_queens
+            | self.w_king;
+        self.b_occupancies = self.b_pawns
+            | self.b_knights
+            | self.b_bishops
+            | self.b_rooks
+            | self.b_queens
+            | self.b_king;
+        self.all_occupancies = self.w_occupancies | self.b_occupancies;
+
+        // Switch side
+        self.side = if self.side == Side::White {
+            Side::Black
+        } else {
+            Side::White
+        };
+
+        // Check if king attacked
+        // if self.side == Side::White {
+        //     self.
+        // }
+
         true
     }
 
@@ -191,7 +214,7 @@ impl Board {
     }
 
     #[inline]
-    pub fn get_side_bitboard(&self, side: Side) -> BitBoard {
+    pub fn get_occupancy_bitboard(&self, side: Side) -> BitBoard {
         match side {
             Side::White => self.w_occupancies,
             Side::Black => self.b_occupancies,
@@ -199,7 +222,7 @@ impl Board {
     }
 
     #[inline]
-    pub fn get_side_bitboard_mut(&mut self, side: Side) -> &mut BitBoard {
+    pub fn get_occupancy_bitboard_mut(&mut self, side: Side) -> &mut BitBoard {
         match side {
             Side::White => &mut self.w_occupancies,
             Side::Black => &mut self.b_occupancies,

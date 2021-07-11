@@ -1,4 +1,4 @@
-pub mod attack_tables;
+pub mod attacks;
 pub mod bitboard;
 pub mod board;
 pub mod castle_rights;

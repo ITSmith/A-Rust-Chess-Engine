@@ -1,5 +1,5 @@
 use crate::{
-    attack_tables::rooks::{gen_rook_attacks, mask_rook_attacks},
+    attacks::rooks::{gen_rook_attacks, mask_rook_attacks},
     bitboard::BitBoard,
     random::RAND,
     square::Square,

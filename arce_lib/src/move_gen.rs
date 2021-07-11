@@ -1,5 +1,7 @@
+use std::rc::Rc;
+
 use crate::{
-    attack_tables::AttackTables,
+    attacks::Attacks,
     board::Board,
     move_list::{Move, MoveList},
     piece::{Piece, BLACK_PIECES, WHITE_PIECES},
@@ -7,15 +9,13 @@ use crate::{
     square::Square,
 };
 
-pub struct MoveGen {
-    pub attacks: AttackTables,
+pub struct MoveGen<'a> {
+    pub attacks: &'a Attacks,
 }
 
-impl MoveGen {
-    pub fn new() -> MoveGen {
-        MoveGen {
-            attacks: AttackTables::gen_attacks(),
-        }
+impl<'a> MoveGen<'a> {
+    pub fn new(attacks: &'a Attacks) -> MoveGen {
+        MoveGen { attacks }
     }
 
     #[inline]
@@ -50,7 +50,7 @@ impl MoveGen {
         while let Some(source_square) = bitboard.get_lsb_square() {
             // Generate quiet pawn moves
             if let Some(target_square) = Square::from_u8(source_square as u8 + 8) {
-                if board.both.get_bit(target_square).is_empty() {
+                if board.all_occupancies.get_bit(target_square).is_empty() {
                     // Pawn promotion
                     if source_square >= Square::A7 && source_square <= Square::H7 {
                         moves.push(Move::encode(
@@ -108,7 +108,7 @@ impl MoveGen {
 
                         if (source_square >= Square::A2 && source_square <= Square::H2)
                             && board
-                                .both
+                                .all_occupancies
                                 .get_bit(Square::from_u8_unchecked(target_square as u8 + 8))
                                 .is_empty()
                         {
@@ -128,7 +128,7 @@ impl MoveGen {
                 }
             }
             // Init pawn attacks
-            let mut attacks = self.attacks.get_w_pawn_attacks(source_square) & board.black;
+            let mut attacks = self.attacks.get_w_pawn_attacks(source_square) & board.b_occupancies;
             // Generate pawn captures
             while let Some(target_square) = attacks.get_lsb_square() {
                 if source_square >= Square::A7 && source_square <= Square::H7 {
@@ -213,9 +213,9 @@ impl MoveGen {
     fn gen_w_knight_moves(&self, board: &Board, moves: &mut MoveList) {
         let mut bitboard = board.get_piece_bitboard(Piece::WKnight);
         while let Some(source_square) = bitboard.get_lsb_square() {
-            let mut attacks = self.attacks.get_knight_attacks(source_square) & !board.white;
+            let mut attacks = self.attacks.get_knight_attacks(source_square) & !board.w_occupancies;
             while let Some(target_square) = attacks.get_lsb_square() {
-                if board.black.get_bit(target_square).is_empty() {
+                if board.b_occupancies.get_bit(target_square).is_empty() {
                     // Quiet move
                     moves.push(Move::encode(
                         source_square,
@@ -250,10 +250,12 @@ impl MoveGen {
     fn gen_w_bishop_moves(&self, board: &Board, moves: &mut MoveList) {
         let mut bitboard = board.get_piece_bitboard(Piece::WBishop);
         while let Some(source_square) = bitboard.get_lsb_square() {
-            let mut attacks =
-                self.attacks.get_bishop_attacks(source_square, board.both) & !board.white;
+            let mut attacks = self
+                .attacks
+                .get_bishop_attacks(source_square, board.all_occupancies)
+                & !board.w_occupancies;
             while let Some(target_square) = attacks.get_lsb_square() {
-                if board.black.get_bit(target_square).is_empty() {
+                if board.b_occupancies.get_bit(target_square).is_empty() {
                     // Quiet move
                     moves.push(Move::encode(
                         source_square,
@@ -288,10 +290,12 @@ impl MoveGen {
     fn gen_w_rook_moves(&self, board: &Board, moves: &mut MoveList) {
         let mut bitboard = board.get_piece_bitboard(Piece::WRook);
         while let Some(source_square) = bitboard.get_lsb_square() {
-            let mut attacks =
-                self.attacks.get_rook_attacks(source_square, board.both) & !board.white;
+            let mut attacks = self
+                .attacks
+                .get_rook_attacks(source_square, board.all_occupancies)
+                & !board.w_occupancies;
             while let Some(target_square) = attacks.get_lsb_square() {
-                if board.black.get_bit(target_square).is_empty() {
+                if board.b_occupancies.get_bit(target_square).is_empty() {
                     // Quiet move
                     moves.push(Move::encode(
                         source_square,
@@ -326,10 +330,12 @@ impl MoveGen {
     fn gen_w_queen_moves(&self, board: &Board, moves: &mut MoveList) {
         let mut bitboard = board.get_piece_bitboard(Piece::WQueen);
         while let Some(source_square) = bitboard.get_lsb_square() {
-            let mut attacks =
-                self.attacks.get_queen_attacks(source_square, board.both) & !board.white;
+            let mut attacks = self
+                .attacks
+                .get_queen_attacks(source_square, board.all_occupancies)
+                & !board.w_occupancies;
             while let Some(target_square) = attacks.get_lsb_square() {
-                if board.black.get_bit(target_square).is_empty() {
+                if board.b_occupancies.get_bit(target_square).is_empty() {
                     // Quiet move
                     moves.push(Move::encode(
                         source_square,
@@ -364,9 +370,9 @@ impl MoveGen {
     fn gen_w_king_moves(&self, board: &Board, moves: &mut MoveList) {
         let mut bitboard = board.get_piece_bitboard(Piece::WKing);
         while let Some(source_square) = bitboard.get_lsb_square() {
-            let mut attacks = self.attacks.get_king_attacks(source_square) & !board.white;
+            let mut attacks = self.attacks.get_king_attacks(source_square) & !board.w_occupancies;
             while let Some(target_square) = attacks.get_lsb_square() {
-                if board.black.get_bit(target_square).is_empty() {
+                if board.b_occupancies.get_bit(target_square).is_empty() {
                     // Quiet move
                     moves.push(Move::encode(
                         source_square,
@@ -399,12 +405,16 @@ impl MoveGen {
         // Kingside castling possible
         if board.castle.wk() {
             // Make sure squares between king and king's rook are empty
-            if board.both.get_bit(Square::F1).is_empty()
-                && board.both.get_bit(Square::G1).is_empty()
+            if board.all_occupancies.get_bit(Square::F1).is_empty()
+                && board.all_occupancies.get_bit(Square::G1).is_empty()
             {
                 // Make sure king and f1 are not attacked
-                if !self.is_square_attacked(board, Square::E1, Side::Black)
-                    && !self.is_square_attacked(board, Square::F1, Side::Black)
+                if !self
+                    .attacks
+                    .is_square_attacked(board, Square::E1, Side::Black)
+                    && !self
+                        .attacks
+                        .is_square_attacked(board, Square::F1, Side::Black)
                 {
                     // Kingside castle
                     moves.push(Move::encode(
@@ -423,13 +433,17 @@ impl MoveGen {
         // Queenside castling possible
         if board.castle.wq() {
             // Make sure squares between king and queen's rook are empty
-            if board.both.get_bit(Square::B1).is_empty()
-                && board.both.get_bit(Square::C1).is_empty()
-                && board.both.get_bit(Square::D1).is_empty()
+            if board.all_occupancies.get_bit(Square::B1).is_empty()
+                && board.all_occupancies.get_bit(Square::C1).is_empty()
+                && board.all_occupancies.get_bit(Square::D1).is_empty()
             {
                 // Make sure king and d1 are not attacked
-                if !self.is_square_attacked(board, Square::E1, Side::Black)
-                    && !self.is_square_attacked(board, Square::D1, Side::Black)
+                if !self
+                    .attacks
+                    .is_square_attacked(board, Square::E1, Side::Black)
+                    && !self
+                        .attacks
+                        .is_square_attacked(board, Square::D1, Side::Black)
                 {
                     // Queenside castle
                     moves.push(Move::encode(
@@ -470,7 +484,7 @@ impl MoveGen {
         while let Some(source_square) = bitboard.get_lsb_square() {
             // Generate quiet pawn moves
             if let Some(target_square) = Square::from_u8(source_square as u8 - 8) {
-                if board.both.get_bit(target_square).is_empty() {
+                if board.all_occupancies.get_bit(target_square).is_empty() {
                     if source_square >= Square::A2 && source_square <= Square::H2 {
                         // Pawn promotion
                         moves.push(Move::encode(
@@ -527,7 +541,7 @@ impl MoveGen {
                         ));
                         if (source_square >= Square::A7 && source_square <= Square::H7)
                             && board
-                                .both
+                                .all_occupancies
                                 .get_bit(Square::from_u8_unchecked(target_square as u8 - 8))
                                 .is_empty()
                         {
@@ -547,7 +561,7 @@ impl MoveGen {
                 }
             }
             // Init pawn attacks
-            let mut attacks = self.attacks.get_b_pawn_attacks(source_square) & board.white;
+            let mut attacks = self.attacks.get_b_pawn_attacks(source_square) & board.w_occupancies;
             // Generate pawn captures
             while let Some(target_square) = attacks.get_lsb_square() {
                 // Pawn capture promotion
@@ -632,9 +646,9 @@ impl MoveGen {
     fn gen_b_knight_moves(&self, board: &Board, moves: &mut MoveList) {
         let mut bitboard = board.get_piece_bitboard(Piece::BKnight);
         while let Some(source_square) = bitboard.get_lsb_square() {
-            let mut attacks = self.attacks.get_knight_attacks(source_square) & !board.black;
+            let mut attacks = self.attacks.get_knight_attacks(source_square) & !board.b_occupancies;
             while let Some(target_square) = attacks.get_lsb_square() {
-                if board.white.get_bit(target_square).is_empty() {
+                if board.w_occupancies.get_bit(target_square).is_empty() {
                     // Quiet move
                     moves.push(Move::encode(
                         source_square,
@@ -669,10 +683,12 @@ impl MoveGen {
     fn gen_b_bishop_moves(&self, board: &Board, moves: &mut MoveList) {
         let mut bitboard = board.get_piece_bitboard(Piece::BBishop);
         while let Some(source_square) = bitboard.get_lsb_square() {
-            let mut attacks =
-                self.attacks.get_bishop_attacks(source_square, board.both) & !board.black;
+            let mut attacks = self
+                .attacks
+                .get_bishop_attacks(source_square, board.all_occupancies)
+                & !board.b_occupancies;
             while let Some(target_square) = attacks.get_lsb_square() {
-                if board.white.get_bit(target_square).is_empty() {
+                if board.w_occupancies.get_bit(target_square).is_empty() {
                     // Quiet move
                     moves.push(Move::encode(
                         source_square,
@@ -707,10 +723,12 @@ impl MoveGen {
     fn gen_b_rook_moves(&self, board: &Board, moves: &mut MoveList) {
         let mut bitboard = board.get_piece_bitboard(Piece::BRook);
         while let Some(source_square) = bitboard.get_lsb_square() {
-            let mut attacks =
-                self.attacks.get_rook_attacks(source_square, board.both) & !board.black;
+            let mut attacks = self
+                .attacks
+                .get_rook_attacks(source_square, board.all_occupancies)
+                & !board.b_occupancies;
             while let Some(target_square) = attacks.get_lsb_square() {
-                if board.white.get_bit(target_square).is_empty() {
+                if board.w_occupancies.get_bit(target_square).is_empty() {
                     // Quiet move
                     moves.push(Move::encode(
                         source_square,
@@ -745,10 +763,12 @@ impl MoveGen {
     fn gen_b_queen_moves(&self, board: &Board, moves: &mut MoveList) {
         let mut bitboard = board.get_piece_bitboard(Piece::BQueen);
         while let Some(source_square) = bitboard.get_lsb_square() {
-            let mut attacks =
-                self.attacks.get_queen_attacks(source_square, board.both) & !board.black;
+            let mut attacks = self
+                .attacks
+                .get_queen_attacks(source_square, board.all_occupancies)
+                & !board.b_occupancies;
             while let Some(target_square) = attacks.get_lsb_square() {
-                if board.white.get_bit(target_square).is_empty() {
+                if board.w_occupancies.get_bit(target_square).is_empty() {
                     // Quiet move
                     moves.push(Move::encode(
                         source_square,
@@ -782,9 +802,9 @@ impl MoveGen {
     fn gen_b_king_moves(&self, board: &Board, moves: &mut MoveList) {
         let mut bitboard = board.get_piece_bitboard(Piece::BKing);
         while let Some(source_square) = bitboard.get_lsb_square() {
-            let mut attacks = self.attacks.get_king_attacks(source_square) & !board.black;
+            let mut attacks = self.attacks.get_king_attacks(source_square) & !board.b_occupancies;
             while let Some(target_square) = attacks.get_lsb_square() {
-                if board.white.get_bit(target_square).is_empty() {
+                if board.w_occupancies.get_bit(target_square).is_empty() {
                     // Quiet move
                     moves.push(Move::encode(
                         source_square,
@@ -817,12 +837,16 @@ impl MoveGen {
         // Kingside castling possible
         if board.castle.bk() {
             // Make sure squares between king and  king's rook are empty
-            if board.both.get_bit(Square::F8).is_empty()
-                && board.both.get_bit(Square::G8).is_empty()
+            if board.all_occupancies.get_bit(Square::F8).is_empty()
+                && board.all_occupancies.get_bit(Square::G8).is_empty()
             {
                 // Make sure king and f8 are not attacked
-                if !self.is_square_attacked(board, Square::E8, Side::White)
-                    && !self.is_square_attacked(board, Square::F8, Side::White)
+                if !self
+                    .attacks
+                    .is_square_attacked(board, Square::E8, Side::White)
+                    && !self
+                        .attacks
+                        .is_square_attacked(board, Square::F8, Side::White)
                 {
                     // Kingside castle
                     moves.push(Move::encode(
@@ -841,13 +865,17 @@ impl MoveGen {
         // Queenside castling possible
         if board.castle.bq() {
             // Make sure squares between king and queen's rook are empty
-            if board.both.get_bit(Square::B8).is_empty()
-                && board.both.get_bit(Square::C8).is_empty()
-                && board.both.get_bit(Square::D8).is_empty()
+            if board.all_occupancies.get_bit(Square::B8).is_empty()
+                && board.all_occupancies.get_bit(Square::C8).is_empty()
+                && board.all_occupancies.get_bit(Square::D8).is_empty()
             {
                 // Make sure king and d8 are not attacked
-                if !self.is_square_attacked(board, Square::E8, Side::White)
-                    && !self.is_square_attacked(board, Square::D8, Side::White)
+                if !self
+                    .attacks
+                    .is_square_attacked(board, Square::E8, Side::White)
+                    && !self
+                        .attacks
+                        .is_square_attacked(board, Square::D8, Side::White)
                 {
                     // Queenside castle
                     moves.push(Move::encode(
@@ -863,48 +891,5 @@ impl MoveGen {
                 }
             }
         }
-    }
-
-    #[inline]
-    pub fn is_square_attacked(&self, board: &Board, square: Square, side: Side) -> bool {
-        if side == Side::White {
-            (self.attacks.get_b_pawn_attacks(square) & board.w_pawns).is_not_empty()
-                || (self.attacks.get_knight_attacks(square) & board.w_knights).is_not_empty()
-                || (self.attacks.get_bishop_attacks(square, board.both) & board.w_bishops)
-                    .is_not_empty()
-                || (self.attacks.get_rook_attacks(square, board.both) & board.w_rooks)
-                    .is_not_empty()
-                || (self.attacks.get_queen_attacks(square, board.both) & board.w_queens)
-                    .is_not_empty()
-                || (self.attacks.get_king_attacks(square) & board.w_king).is_not_empty()
-        } else {
-            (self.attacks.get_w_pawn_attacks(square) & board.b_pawns).is_not_empty()
-                || (self.attacks.get_knight_attacks(square) & board.b_knights).is_not_empty()
-                || (self.attacks.get_bishop_attacks(square, board.both) & board.b_bishops)
-                    .is_not_empty()
-                || (self.attacks.get_rook_attacks(square, board.both) & board.b_rooks)
-                    .is_not_empty()
-                || (self.attacks.get_queen_attacks(square, board.both) & board.b_queens)
-                    .is_not_empty()
-                || (self.attacks.get_king_attacks(square) & board.b_king).is_not_empty()
-        }
-    }
-
-    pub fn print_attacked_squares(&self, board: &Board, side: Side) {
-        for r in (0..8).rev() {
-            print!(" {}", r + 1);
-            for f in 0..8 {
-                let square = Square::from_fr_unchecked(f, r);
-                let is_attacked = if self.is_square_attacked(board, square, side) {
-                    1
-                } else {
-                    0
-                };
-
-                print!(" {}", is_attacked);
-            }
-            println!();
-        }
-        println!("   A B C D E F G H");
     }
 }

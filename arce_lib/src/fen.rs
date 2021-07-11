@@ -69,7 +69,7 @@ pub fn parse(fen: &str) -> Option<Board> {
 
     let w_occupancies = w_pawns | w_knights | w_bishops | w_rooks | w_queens | w_king;
     let b_occupancies = b_pawns | b_knights | b_bishops | b_rooks | b_queens | b_king;
-    let a_occupancies = w_occupancies | b_occupancies;
+    let all_occupancies = w_occupancies | b_occupancies;
 
     let side = match fen_side {
         "w" => Side::White,
@@ -99,7 +99,7 @@ pub fn parse(fen: &str) -> Option<Board> {
         b_king,
         w_occupancies,
         b_occupancies,
-        a_occupancies,
+        all_occupancies,
         side,
         en_passant,
         castle,

@@ -2,7 +2,7 @@ pub mod bishop;
 pub mod rook;
 
 use crate::{
-    attack_tables::magics::{
+    attacks::magics::{
         bishop::{find_bishop_magic_number, BISHOP_RELEVANT_BITS},
         rook::{find_rook_magic_number, ROOK_RELEVANT_BITS},
     },
@@ -33,7 +33,7 @@ mod test {
     use std::convert::TryInto;
 
     use crate::{
-        attack_tables::magics::{
+        attacks::magics::{
             bishop::{find_bishop_magic_number, BISHOP_RELEVANT_BITS},
             rook::{find_rook_magic_number, ROOK_MAGIC_NUMBERS, ROOK_RELEVANT_BITS},
         },

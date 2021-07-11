@@ -1,5 +1,5 @@
 use crate::{
-    attack_tables::bishops::{gen_bishop_attacks, mask_bishop_attacks},
+    attacks::bishops::{gen_bishop_attacks, mask_bishop_attacks},
     bitboard::BitBoard,
     random::RAND,
     square::Square,
