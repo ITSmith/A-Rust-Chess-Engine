@@ -40,17 +40,17 @@ impl Board {
         let source_square = mov.extract_source();
         let target_square = mov.extract_target();
         let piece = mov.extract_piece();
-        let promoted = mov.extract_promoted();
+        let promoted_piece = mov.extract_promoted_piece();
         let capture = mov.extract_capture();
         let double_push = mov.extract_double_push();
         let en_passant = mov.extract_en_passant();
         let castling = mov.extract_castling();
 
         // Move piece
-        self.get_piece_bitboard_as_ref(piece).pop_bit(source_square);
-        self.get_piece_bitboard_as_ref(piece).set_bit(target_square);
+        self.get_piece_bitboard_mut(piece).pop_bit(source_square);
+        self.get_piece_bitboard_mut(piece).set_bit(target_square);
 
-        // Handle aptures
+        // Handle captures
         if capture {
             let pieces = if self.side == Side::White {
                 BLACK_PIECES
@@ -58,16 +58,27 @@ impl Board {
                 WHITE_PIECES
             };
 
+            // Remove captured piece
             for piece in pieces {
                 if self
                     .get_piece_bitboard(piece)
                     .get_bit(target_square)
                     .is_not_empty()
                 {
-                    self.get_piece_bitboard_as_ref(piece).pop_bit(target_square)
+                    self.get_piece_bitboard_mut(piece).pop_bit(target_square);
+                    break;
                 }
             }
         }
+        // Handle promotions
+        if promoted_piece != Piece::None {
+            // Remove pawn
+            self.get_piece_bitboard_mut(piece).pop_bit(target_square);
+            // Set promeoted piece
+            self.get_piece_bitboard(promoted_piece)
+                .set_bit(target_square);
+        }
+
         true
     }
 
@@ -100,7 +111,7 @@ impl Board {
     }
 
     #[inline]
-    pub fn get_piece_bitboard_as_ref(&mut self, piece: Piece) -> &mut BitBoard {
+    pub fn get_piece_bitboard_mut(&mut self, piece: Piece) -> &mut BitBoard {
         assert_ne!(piece, Piece::None);
         match piece {
             Piece::WPawn => &mut self.w_pawns,
@@ -116,6 +127,22 @@ impl Board {
             Piece::BQueen => &mut self.b_queens,
             Piece::BKing => &mut self.b_king,
             Piece::None => unreachable!(),
+        }
+    }
+
+    #[inline]
+    pub fn get_side_bitboard(&self, side: Side) -> BitBoard {
+        match side {
+            Side::White => self.white,
+            Side::Black => self.black,
+        }
+    }
+
+    #[inline]
+    pub fn get_side_bitboard_mut(&mut self, side: Side) -> &mut BitBoard {
+        match side {
+            Side::White => &mut self.white,
+            Side::Black => &mut self.black,
         }
     }
 

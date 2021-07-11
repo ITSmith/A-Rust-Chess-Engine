@@ -1,9 +1,9 @@
-use std::fmt::Display;
+use std::{fmt::Display, ops::Index, usize};
 
 use crate::{piece::Piece, square::Square};
 
 pub struct MoveList {
-    moves: Vec<Move>,
+    pub moves: Vec<Move>,
 }
 
 impl MoveList {
@@ -36,7 +36,7 @@ impl MoveList {
                 " {:7}{:9}{:11}{:10}{:9}{:13}{}",
                 m.to_string(),
                 m.extract_piece().to_unicode(),
-                m.extract_promoted().to_unicode(),
+                m.extract_promoted_piece().to_unicode(),
                 m.extract_capture().to_string(),
                 m.extract_double_push().to_string(),
                 m.extract_en_passant(),
@@ -44,6 +44,14 @@ impl MoveList {
             )
         });
         println!(" Number of moves: {}", self.moves.len());
+    }
+}
+
+impl Index<usize> for MoveList {
+    type Output = Move;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.moves[index]
     }
 }
 
@@ -57,7 +65,7 @@ impl Move {
         source_square: Square,
         target_square: Square,
         piece: Piece,
-        promoted: Piece,
+        promoted_piece: Piece,
         capture: bool,
         double_push: bool,
         en_passant: bool,
@@ -66,7 +74,7 @@ impl Move {
         let mut mv = source_square as u32
             | ((target_square as u32) << 6)
             | ((piece as u32) << 12)
-            | ((promoted as u32) << 16);
+            | ((promoted_piece as u32) << 16);
         if capture {
             mv |= 1 << 20;
         }
@@ -98,7 +106,7 @@ impl Move {
     }
 
     #[inline]
-    pub fn extract_promoted(self) -> Piece {
+    pub fn extract_promoted_piece(self) -> Piece {
         Piece::from_u8(((self.0 & 0xf_0000) >> 16) as u8)
     }
 
@@ -125,7 +133,7 @@ impl Move {
 
 impl Display for Move {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let p = match self.extract_promoted() {
+        let p = match self.extract_promoted_piece() {
             Piece::WKnight | Piece::BKnight => 'n',
             Piece::WBishop | Piece::BBishop => 'b',
             Piece::WRook | Piece::BRook => 'r',
@@ -157,7 +165,7 @@ mod test {
         assert_eq!(m.extract_source(), Square::E4);
         assert_eq!(m.extract_target(), Square::H8);
         assert_eq!(m.extract_piece(), Piece::BBishop);
-        assert_eq!(m.extract_promoted(), Piece::BQueen);
+        assert_eq!(m.extract_promoted_piece(), Piece::BQueen);
         assert_eq!(m.extract_capture(), true);
         assert_eq!(m.extract_double_push(), true);
         assert_eq!(m.extract_en_passant(), true);

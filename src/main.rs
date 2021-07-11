@@ -24,10 +24,11 @@ fn main() {
     b.print_board();
     let mut ml = MoveList::with_capacity(40);
     mg.generate_moves(&b, &mut ml);
-    let m = ml.pop().unwrap();
+    let m = ml[7];
     println!("{}", m);
     b.make_move(m);
     b.print_board();
+    ml.print_move_list();
 
     let elapsed = now.elapsed();
     println!("Elapsed: {:.2?}", elapsed);
