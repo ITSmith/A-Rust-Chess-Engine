@@ -9,7 +9,7 @@ These lists are non-exhaustive and not necessarilly in order.
 
 ### Features necessary for a working engine:
  - [x] Move generation
- - [ ] Move making/undoing
+ - [x] Move making/undoing
  - [ ] Move evaluation
  - [ ] Move searching
  - [ ] UCI interface (I/O)
