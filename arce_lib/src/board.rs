@@ -1,6 +1,7 @@
-use std::{convert::TryFrom, fmt::Display};
+use std::{convert::TryFrom, fmt::Display, mem};
 
 use crate::{
+    attacks::Attacks,
     bitboard::BitBoard,
     castle_rights::CastleRights,
     move_list::Move,
@@ -34,8 +35,10 @@ pub struct Board {
 }
 
 impl Board {
+    /// Attempts to make a move. Reverts and returns false if the move is illegal. Returns true otherwise.
     #[inline]
-    pub fn make_move(&mut self, mov: Move) -> bool {
+    pub fn make_move(&mut self, mov: Move, attacks: &Attacks) -> bool {
+        let copy = self.clone();
         // Parse move
         let source_square = mov.extract_source();
         let target_square = mov.extract_target();
@@ -157,18 +160,27 @@ impl Board {
             Side::White
         };
 
-        // Check if king attacked
-        // if self.side == Side::White {
-        //     self.
-        // }
-
-        true
+        // If king attacked revert and return false
+        if (self.side == Side::White
+            && attacks.is_square_attacked(&self, self.b_king.get_lsb_square().unwrap(), self.side))
+            || (self.side == Side::Black
+                && attacks.is_square_attacked(
+                    &self,
+                    self.w_king.get_lsb_square().unwrap(),
+                    self.side,
+                ))
+        {
+            let _ = mem::replace(self, copy);
+            false
+        } else {
+            true
+        }
     }
 
     #[inline]
-    pub fn make_capture(&mut self, mov: Move) -> bool {
+    pub fn make_capture(&mut self, mov: Move, attacks: &Attacks) -> bool {
         if mov.extract_capture() {
-            self.make_move(mov)
+            self.make_move(mov, attacks)
         } else {
             false
         }

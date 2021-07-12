@@ -9,20 +9,15 @@ fn main() {
     let mg = MoveGen::new(&at);
 
     let mut b =
-        parse("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1").unwrap();
-    let mut ml = MoveList::with_capacity(50);
-    mg.generate_moves(&b, &mut ml);
+        parse("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R2qK2R w KQkq - 0 1").unwrap();
+    let mut ml = mg.generate_moves(&b);
     ml.print_move_list();
     b.print_board();
-    let m = ml[46];
+    let m = ml[32];
     println!("{}", m);
-    b.make_move(m);
+    let ms = b.make_move(m, &at);
     b.print_board();
-
-    println!(
-        "White:\n{}\nBlack{}\nBoth:\n{}",
-        b.w_occupancies, b.b_occupancies, b.all_occupancies
-    );
+    println!("Move success: {}", ms);
 
     let elapsed = now.elapsed();
     println!("Elapsed: {:.2?}", elapsed);

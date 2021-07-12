@@ -153,8 +153,8 @@ impl Attacks {
     }
 
     #[inline]
-    pub fn is_square_attacked(&self, board: &Board, square: Square, side: Side) -> bool {
-        if side == Side::White {
+    pub fn is_square_attacked(&self, board: &Board, square: Square, by: Side) -> bool {
+        if by == Side::White {
             (self.get_b_pawn_attacks(square) & board.w_pawns).is_not_empty()
                 || (self.get_knight_attacks(square) & board.w_knights).is_not_empty()
                 || (self.get_bishop_attacks(square, board.all_occupancies) & board.w_bishops)

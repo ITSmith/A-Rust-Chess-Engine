@@ -5,6 +5,7 @@ pub mod castle_rights;
 pub mod fen;
 pub mod move_gen;
 pub mod move_list;
+pub mod perft;
 pub mod piece;
 pub mod random;
 pub mod side;

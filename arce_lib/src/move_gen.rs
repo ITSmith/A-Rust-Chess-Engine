@@ -1,5 +1,3 @@
-use std::rc::Rc;
-
 use crate::{
     attacks::Attacks,
     board::Board,
@@ -19,11 +17,13 @@ impl<'a> MoveGen<'a> {
     }
 
     #[inline]
-    pub fn generate_moves(&self, board: &Board, moves: &mut MoveList) {
+    pub fn generate_moves(&self, board: &Board) -> MoveList {
+        let mut moves = MoveList::new();
         match board.side {
-            Side::White => self.gen_w_moves(board, moves),
-            Side::Black => self.gen_b_moves(board, moves),
+            Side::White => self.gen_w_moves(board, &mut moves),
+            Side::Black => self.gen_b_moves(board, &mut moves),
         }
+        moves
     }
 
     #[inline]

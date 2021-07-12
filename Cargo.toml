@@ -7,6 +7,14 @@ edition = "2018"
 
 [workspace]
 
+[[bin]]
+name = "engine"
+path = "src/main.rs"
+
+[[bin]]
+name = "perft"
+path = "src/perft.rs"
+
 [profile.release]
 lto = true
 panic = "abort"
