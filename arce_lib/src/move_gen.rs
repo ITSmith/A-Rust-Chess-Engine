@@ -7,18 +7,18 @@ use crate::{
     square::Square,
 };
 
-pub struct MoveGen<'a> {
-    pub attacks: &'a Attacks,
+pub struct MoveGen {
+    pub attacks: Attacks,
 }
 
-impl<'a> MoveGen<'a> {
-    pub fn new(attacks: &'a Attacks) -> MoveGen {
+impl MoveGen {
+    pub fn new(attacks: Attacks) -> MoveGen {
         MoveGen { attacks }
     }
 
     #[inline]
     pub fn generate_moves(&self, board: &Board) -> MoveList {
-        let mut moves = MoveList::new();
+        let mut moves = MoveList::with_capacity(256);
         match board.side {
             Side::White => self.gen_w_moves(board, &mut moves),
             Side::Black => self.gen_b_moves(board, &mut moves),
