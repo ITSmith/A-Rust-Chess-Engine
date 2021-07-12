@@ -1,15 +1,40 @@
-use std::mem;
+use std::{mem, time::Instant};
 
 use crate::{attacks::Attacks, board::Board, move_gen::MoveGen};
 
-pub struct Perft {
+pub fn perft_test(board: Board, depth: u32) {
+    println!("Performance Test:");
+    let mut p = Perft::new(board);
+    let moves = p.move_gen.generate_moves(&p.board);
+    // Start timer
+    let start_time = Instant::now();
+    // Find perft of all legal moves
+    for mov in moves.moves.iter() {
+        let copy = p.board.clone();
+        if !p.board.make_move(*mov, &p.move_gen.attacks) {
+            continue;
+        }
+        let prev_nodes = p.nodes;
+        p.perft_driver(depth - 1);
+        let new_nodes = p.nodes - prev_nodes;
+        // Reset board
+        let _ = mem::replace(&mut p.board, copy);
+        println!(" move: {:5}  nodes: {}", mov, new_nodes);
+    }
+    let time = start_time.elapsed();
+    println!("Depth: {}", depth);
+    println!("Nodes: {}", p.nodes);
+    println!("Time: {:02?}", time);
+}
+
+struct Perft {
     move_gen: MoveGen,
     board: Board,
     pub nodes: u64,
 }
 
 impl Perft {
-    pub fn new(board: Board) -> Perft {
+    fn new(board: Board) -> Perft {
         Perft {
             move_gen: MoveGen::new(Attacks::gen()),
             board,
@@ -18,7 +43,7 @@ impl Perft {
     }
 
     #[inline]
-    pub fn perft_driver(&mut self, depth: u32) {
+    fn perft_driver(&mut self, depth: u32) {
         if depth == 0 {
             self.nodes += 1;
             return;
@@ -34,24 +59,3 @@ impl Perft {
         }
     }
 }
-
-// #[inline]
-// pub fn perft_driver(depth: u32, board: Board) {
-//     let move_gen = MoveGen::new(Attacks::gen());
-
-//     let perft_rec = |depth: u32| -> u32 {
-//         if depth == 0 {
-//             return 1;
-//         }
-//         let moves = move_gen.generate_moves(&board);
-//         for mov in moves.moves.iter() {
-//             let copy = board.clone();
-//             if board.make_move(*mov, &move_gen.attacks) {
-//                 continue;
-//             }
-//             self.perft_driver(depth - 1);
-//             let _ = mem::replace(&mut self.board, copy);
-//         }
-//     }
-//     let nodes = perft_rec(depth);
-// }

@@ -133,13 +133,14 @@ impl Move {
 }
 
 impl Display for Move {
+    #[inline]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let p = match self.extract_promoted_piece() {
             Piece::WKnight | Piece::BKnight => 'n',
             Piece::WBishop | Piece::BBishop => 'b',
             Piece::WRook | Piece::BRook => 'r',
             Piece::WQueen | Piece::BQueen => 'q',
-            _ => ' ',
+            _ => return write!(f, "{}{}", self.extract_source(), self.extract_target()),
         };
         write!(f, "{}{}{}", self.extract_source(), self.extract_target(), p)
     }

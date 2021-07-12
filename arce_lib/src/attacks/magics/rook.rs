@@ -1,8 +1,8 @@
 use crate::{
     attacks::rooks::{gen_rook_attacks, mask_rook_attacks},
     bitboard::BitBoard,
-    random::RAND,
     square::Square,
+    utils::random::RAND,
 };
 
 pub const ROOK_RELEVANT_BITS: [u8; 64] = [

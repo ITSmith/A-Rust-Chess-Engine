@@ -301,7 +301,7 @@ impl From<Square> for (i8, i8) {
 
 /// (File, Rank)
 impl TryFrom<(u8, u8)> for Square {
-    type Error = String;
+    type Error = ();
 
     fn try_from(value: (u8, u8)) -> Result<Self, Self::Error> {
         Square::try_from(8 * value.0 + value.1)
@@ -309,7 +309,7 @@ impl TryFrom<(u8, u8)> for Square {
 }
 
 impl TryFrom<u8> for Square {
-    type Error = String;
+    type Error = ();
 
     fn try_from(value: u8) -> Result<Self, Self::Error> {
         Ok(match value {
@@ -377,13 +377,13 @@ impl TryFrom<u8> for Square {
             61 => Self::F8,
             62 => Self::G8,
             63 => Self::H8,
-            _ => return Err("Invalid square".to_string()),
+            _ => return Err(()),
         })
     }
 }
 
 impl TryFrom<&str> for Square {
-    type Error = String;
+    type Error = ();
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         Ok(match value {
@@ -451,7 +451,7 @@ impl TryFrom<&str> for Square {
             "f8" => Self::F8,
             "g8" => Self::G8,
             "h8" => Self::H8,
-            _ => return Err("Invalid square".to_string()),
+            _ => return Err(()),
         })
     }
 }

@@ -1,8 +1,8 @@
 use crate::{
     attacks::bishops::{gen_bishop_attacks, mask_bishop_attacks},
     bitboard::BitBoard,
-    random::RAND,
     square::Square,
+    utils::random::RAND,
 };
 
 pub const BISHOP_RELEVANT_BITS: [u8; 64] = [
