@@ -1,9 +1,12 @@
-use std::convert::TryFrom;
+use std::{convert::TryFrom, num::NonZeroU8};
 
 use crate::{
+    attacks::Attacks,
+    move_gen::{self, MoveGen},
     move_list::{Move, MoveList},
-    piece::Piece,
+    position::Position,
     square::Square,
+    utils::fen::{parse_fen, START_POSITION},
 };
 
 pub fn parse_move(move_str: &str, move_list: &MoveList) -> Result<Move, ()> {
@@ -26,4 +29,72 @@ pub fn parse_move(move_str: &str, move_list: &MoveList) -> Result<Move, ()> {
         }
     }
     Err(())
+}
+
+pub fn parse_position(uci_str: &str, move_gen: &MoveGen) -> Option<Position> {
+    // Check if string has correct prefix
+    let pos_str = uci_str.strip_prefix("position ")?;
+    // Check whether position is standard start position or FEN
+    if let Some(moves_str) = pos_str.strip_prefix("startpos") {
+        // Create start position
+        let mut pos = parse_fen(START_POSITION)?;
+        // Check for moves
+        if let Some(moves_str) = moves_str.strip_prefix(" moves ") {
+            // Make moves
+            for mov in moves_str.split_ascii_whitespace() {
+                if let Ok(mov) = parse_move(mov, &move_gen.generate_moves(&pos)) {
+                    if !pos.make_move(mov, &move_gen.attacks) {
+                        return None;
+                    }
+                } else {
+                    return None;
+                }
+            }
+        }
+
+        Some(pos)
+    } else if let Some(pos_str) = pos_str.strip_prefix("fen ") {
+        // Check for moves
+        match pos_str.split_once(" moves ") {
+            Some((fen, moves_str)) => {
+                // Create position
+                let mut pos = parse_fen(fen)?;
+                // Make moves
+                for mov in moves_str.split_ascii_whitespace() {
+                    if let Ok(mov) = parse_move(mov, &move_gen.generate_moves(&pos)) {
+                        if !pos.make_move(mov, &move_gen.attacks) {
+                            return None;
+                        }
+                    } else {
+                        return None;
+                    }
+                }
+
+                Some(pos)
+            }
+            None => parse_fen(pos_str),
+        }
+    } else {
+        None
+    }
+}
+
+pub fn parse_go(go_str: &str) -> Option<()> {
+    let mut go_args = go_str.split_ascii_whitespace();
+    if go_args.next()? != "go" {
+        return None;
+    }
+    let mut depth = None;
+    // Check for fixed depth
+    if go_args.next()? == "depth" {
+        match go_args.next()?.parse::<NonZeroU8>() {
+            Ok(d) => depth = Some(d),
+            Err(_) => return None,
+        }
+    } else {
+        depth = NonZeroU8::new(6);
+    }
+    println!("Depth: {:?}", depth);
+    // search_pos()
+    None
 }

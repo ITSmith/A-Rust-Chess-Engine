@@ -1,7 +1,7 @@
 use std::convert::TryFrom;
 
 use crate::{
-    bitboard::BitBoard, board::Board, castle_rights::CastleRights, side::Side, square::Square,
+    bitboard::BitBoard, castle_rights::CastleRights, position::Position, side::Side, square::Square,
 };
 
 pub const EMPTY_BOARD: &str = "8/8/8/8/8/8/8/8 w - -";
@@ -13,7 +13,7 @@ pub const KILLER_POSITION: &str =
 pub const CMK_POSITION: &str =
     "r2q1rk1/ppp2ppp/2n1bn2/2b1p3/3pP3/3P1NPP/PPP1NPB1/R1BQ1RK1 b - - 0 9";
 
-pub fn parse(fen: &str) -> Option<Board> {
+pub fn parse_fen(fen: &str) -> Option<Position> {
     let mut fen = fen.trim().split_ascii_whitespace();
     let mut fen_board = fen.next()?.split('/');
     let fen_side = fen.next()?;
@@ -84,7 +84,7 @@ pub fn parse(fen: &str) -> Option<Board> {
 
     let castle = CastleRights::from(fen_castle);
 
-    Some(Board {
+    Some(Position {
         w_pawns,
         w_knights,
         w_bishops,

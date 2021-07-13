@@ -11,7 +11,7 @@ use crate::{
 };
 
 #[derive(Clone)]
-pub struct Board {
+pub struct Position {
     pub w_pawns: BitBoard,
     pub w_knights: BitBoard,
     pub w_bishops: BitBoard,
@@ -34,7 +34,7 @@ pub struct Board {
     pub castle: CastleRights,
 }
 
-impl Board {
+impl Position {
     /// Attempts to make a move. Reverts and returns false if the move is illegal. Returns true otherwise.
     #[inline]
     pub fn make_move(&mut self, mov: Move, attacks: &Attacks) -> bool {
@@ -289,7 +289,7 @@ impl Board {
     }
 }
 
-impl Display for Board {
+impl Display for Position {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut bstr = String::with_capacity(72);
         for r in (0..8).rev() {

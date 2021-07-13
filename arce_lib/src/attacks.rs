@@ -8,7 +8,7 @@ use crate::{
         rooks::gen_rook_attacks,
     },
     bitboard::BitBoard,
-    board::Board,
+    position::Position,
     side::Side,
     square::{Square, SQUARES},
 };
@@ -153,36 +153,34 @@ impl Attacks {
     }
 
     #[inline]
-    pub fn is_square_attacked(&self, board: &Board, square: Square, by: Side) -> bool {
+    pub fn is_square_attacked(&self, pos: &Position, square: Square, by: Side) -> bool {
         if by == Side::White {
-            (self.get_b_pawn_attacks(square) & board.w_pawns).is_not_empty()
-                || (self.get_knight_attacks(square) & board.w_knights).is_not_empty()
-                || (self.get_bishop_attacks(square, board.all_occupancies) & board.w_bishops)
+            (self.get_b_pawn_attacks(square) & pos.w_pawns).is_not_empty()
+                || (self.get_knight_attacks(square) & pos.w_knights).is_not_empty()
+                || (self.get_bishop_attacks(square, pos.all_occupancies) & pos.w_bishops)
                     .is_not_empty()
-                || (self.get_rook_attacks(square, board.all_occupancies) & board.w_rooks)
+                || (self.get_rook_attacks(square, pos.all_occupancies) & pos.w_rooks).is_not_empty()
+                || (self.get_queen_attacks(square, pos.all_occupancies) & pos.w_queens)
                     .is_not_empty()
-                || (self.get_queen_attacks(square, board.all_occupancies) & board.w_queens)
-                    .is_not_empty()
-                || (self.get_king_attacks(square) & board.w_king).is_not_empty()
+                || (self.get_king_attacks(square) & pos.w_king).is_not_empty()
         } else {
-            (self.get_w_pawn_attacks(square) & board.b_pawns).is_not_empty()
-                || (self.get_knight_attacks(square) & board.b_knights).is_not_empty()
-                || (self.get_bishop_attacks(square, board.all_occupancies) & board.b_bishops)
+            (self.get_w_pawn_attacks(square) & pos.b_pawns).is_not_empty()
+                || (self.get_knight_attacks(square) & pos.b_knights).is_not_empty()
+                || (self.get_bishop_attacks(square, pos.all_occupancies) & pos.b_bishops)
                     .is_not_empty()
-                || (self.get_rook_attacks(square, board.all_occupancies) & board.b_rooks)
+                || (self.get_rook_attacks(square, pos.all_occupancies) & pos.b_rooks).is_not_empty()
+                || (self.get_queen_attacks(square, pos.all_occupancies) & pos.b_queens)
                     .is_not_empty()
-                || (self.get_queen_attacks(square, board.all_occupancies) & board.b_queens)
-                    .is_not_empty()
-                || (self.get_king_attacks(square) & board.b_king).is_not_empty()
+                || (self.get_king_attacks(square) & pos.b_king).is_not_empty()
         }
     }
 
-    pub fn print_attacked_squares(&self, board: &Board, side: Side) {
+    pub fn print_attacked_squares(&self, pos: &Position, side: Side) {
         for r in (0..8).rev() {
             print!(" {}", r + 1);
             for f in 0..8 {
                 let square = Square::from_fr_unchecked(f, r);
-                let is_attacked = if self.is_square_attacked(board, square, side) {
+                let is_attacked = if self.is_square_attacked(pos, square, side) {
                     1
                 } else {
                     0
