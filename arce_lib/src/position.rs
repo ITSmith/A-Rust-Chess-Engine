@@ -207,7 +207,7 @@ impl Position {
 
     #[inline]
     pub fn get_piece_bitboard_mut(&mut self, piece: Piece) -> &mut BitBoard {
-        assert_ne!(piece, Piece::None);
+        debug_assert_ne!(piece, Piece::None);
         match piece {
             Piece::WPawn => &mut self.w_pawns,
             Piece::WKnight => &mut self.w_knights,

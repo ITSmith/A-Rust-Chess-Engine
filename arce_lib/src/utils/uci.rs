@@ -125,16 +125,19 @@ pub fn parse_go(go_str: &str) -> Option<()> {
     if go_args.next()? != "go" {
         return None;
     }
-    let mut depth = None;
+    let mut depth = 6;
     // Check for fixed depth
     if go_args.next()? == "depth" {
-        match go_args.next()?.parse::<NonZeroU8>() {
-            Ok(d) => depth = Some(d),
-            Err(_) => return None,
+        match go_args.next()?.parse::<u8>() {
+            Ok(d) => depth = d,
+            Err(_) => (),
         }
-    } else {
-        depth = NonZeroU8::new(6);
     }
-    search_pos();
+    search_pos(depth);
     None
+}
+
+pub fn search_pos(depth: u8) {
+    // Placeholder
+    println!("bestmove d2d4");
 }

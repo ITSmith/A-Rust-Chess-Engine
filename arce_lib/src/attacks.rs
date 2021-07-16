@@ -59,7 +59,7 @@ impl Attacks {
         let mut bishop_attacks = Box::new([[BitBoard::empty(); 512]; 64]);
         let mut rook_attacks = vec![[BitBoard::empty(); 4096]; 64].into_boxed_slice();
 
-        for square in SQUARES {
+        SQUARES.iter().for_each(|&square| {
             let i = square as usize;
             w_pawn[i] = mask_pawn_attacks(square, Side::White);
             b_pawn[i] = mask_pawn_attacks(square, Side::Black);
@@ -95,7 +95,7 @@ impl Attacks {
                 rook_attacks[square as usize][magic_index.0 as usize] =
                     gen_rook_attacks(square, occupancy);
             }
-        }
+        });
 
         Attacks {
             w_pawn,
