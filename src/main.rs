@@ -2,7 +2,6 @@ use std::time::Instant;
 
 use arce_lib::{
     attacks::Attacks,
-    move_gen::MoveGen,
     utils::{
         fen::{parse_fen, START_POSITION, TRICKY_POSITION},
         uci::{parse_go, parse_move, parse_position, uci_loop},

@@ -168,9 +168,9 @@ mod test {
         assert_eq!(m.extract_target(), Square::H8);
         assert_eq!(m.extract_piece(), Piece::BBishop);
         assert_eq!(m.extract_promoted_piece(), Piece::BQueen);
-        assert_eq!(m.extract_capture(), true);
-        assert_eq!(m.extract_double_push(), true);
-        assert_eq!(m.extract_en_passant(), true);
-        assert_eq!(m.extract_castling(), true);
+        assert!(m.extract_capture());
+        assert!(m.extract_double_push());
+        assert!(m.extract_en_passant());
+        assert!(m.extract_castling());
     }
 }

@@ -8,7 +8,7 @@ use crate::{
 };
 
 #[inline]
-pub fn generate_moves(attacks: Attacks, pos: &Position) -> MoveList {
+pub fn generate_moves(attacks: &Attacks, pos: &Position) -> MoveList {
     let mut moves = MoveList::with_capacity(256);
     match pos.side {
         Side::White => gen_w_moves(attacks, pos, &mut moves),
@@ -18,7 +18,7 @@ pub fn generate_moves(attacks: Attacks, pos: &Position) -> MoveList {
 }
 
 #[inline]
-fn gen_w_moves(attacks: Attacks, pos: &Position, moves: &mut MoveList) {
+fn gen_w_moves(attacks: &Attacks, pos: &Position, moves: &mut MoveList) {
     for piece in WHITE_PIECES {
         if piece == Piece::WPawn {
             gen_w_pawn_moves(attacks, pos, moves)
@@ -36,7 +36,7 @@ fn gen_w_moves(attacks: Attacks, pos: &Position, moves: &mut MoveList) {
     }
 }
 
-fn gen_w_pawn_moves(attacks: Attacks, pos: &Position, moves: &mut MoveList) {
+fn gen_w_pawn_moves(attacks: &Attacks, pos: &Position, moves: &mut MoveList) {
     let mut bitboard = pos.get_piece_bitboard(Piece::WPawn);
     while let Some(source_square) = bitboard.get_lsb_square() {
         // Generate quiet pawn moves
@@ -201,7 +201,7 @@ fn gen_w_pawn_moves(attacks: Attacks, pos: &Position, moves: &mut MoveList) {
     }
 }
 
-fn gen_w_knight_moves(attacks: Attacks, pos: &Position, moves: &mut MoveList) {
+fn gen_w_knight_moves(attacks: &Attacks, pos: &Position, moves: &mut MoveList) {
     let mut bitboard = pos.get_piece_bitboard(Piece::WKnight);
     while let Some(source_square) = bitboard.get_lsb_square() {
         let mut attacks_bb = attacks.get_knight_attacks(source_square) & !pos.w_occupancies;
@@ -238,7 +238,7 @@ fn gen_w_knight_moves(attacks: Attacks, pos: &Position, moves: &mut MoveList) {
     }
 }
 
-fn gen_w_bishop_moves(attacks: Attacks, pos: &Position, moves: &mut MoveList) {
+fn gen_w_bishop_moves(attacks: &Attacks, pos: &Position, moves: &mut MoveList) {
     let mut bitboard = pos.get_piece_bitboard(Piece::WBishop);
     while let Some(source_square) = bitboard.get_lsb_square() {
         let mut attacks_bb =
@@ -276,7 +276,7 @@ fn gen_w_bishop_moves(attacks: Attacks, pos: &Position, moves: &mut MoveList) {
     }
 }
 
-fn gen_w_rook_moves(attacks: Attacks, pos: &Position, moves: &mut MoveList) {
+fn gen_w_rook_moves(attacks: &Attacks, pos: &Position, moves: &mut MoveList) {
     let mut bitboard = pos.get_piece_bitboard(Piece::WRook);
     while let Some(source_square) = bitboard.get_lsb_square() {
         let mut attacks_bb =
@@ -314,7 +314,7 @@ fn gen_w_rook_moves(attacks: Attacks, pos: &Position, moves: &mut MoveList) {
     }
 }
 
-fn gen_w_queen_moves(attacks: Attacks, pos: &Position, moves: &mut MoveList) {
+fn gen_w_queen_moves(attacks: &Attacks, pos: &Position, moves: &mut MoveList) {
     let mut bitboard = pos.get_piece_bitboard(Piece::WQueen);
     while let Some(source_square) = bitboard.get_lsb_square() {
         let mut attacks_bb =
@@ -352,7 +352,7 @@ fn gen_w_queen_moves(attacks: Attacks, pos: &Position, moves: &mut MoveList) {
     }
 }
 
-fn gen_w_king_moves(attacks: Attacks, pos: &Position, moves: &mut MoveList) {
+fn gen_w_king_moves(attacks: &Attacks, pos: &Position, moves: &mut MoveList) {
     let mut bitboard = pos.get_piece_bitboard(Piece::WKing);
     while let Some(source_square) = bitboard.get_lsb_square() {
         let mut attacks_bb = attacks.get_king_attacks(source_square) & !pos.w_occupancies;
@@ -438,7 +438,7 @@ fn gen_w_king_moves(attacks: Attacks, pos: &Position, moves: &mut MoveList) {
     }
 }
 
-fn gen_b_moves(attacks: Attacks, pos: &Position, moves: &mut MoveList) {
+fn gen_b_moves(attacks: &Attacks, pos: &Position, moves: &mut MoveList) {
     for piece in BLACK_PIECES {
         if piece == Piece::BPawn {
             gen_b_pawn_moves(attacks, pos, moves)
@@ -456,7 +456,7 @@ fn gen_b_moves(attacks: Attacks, pos: &Position, moves: &mut MoveList) {
     }
 }
 
-fn gen_b_pawn_moves(attacks: Attacks, pos: &Position, moves: &mut MoveList) {
+fn gen_b_pawn_moves(attacks: &Attacks, pos: &Position, moves: &mut MoveList) {
     let mut bitboard = pos.get_piece_bitboard(Piece::BPawn);
     while let Some(source_square) = bitboard.get_lsb_square() {
         // Generate quiet pawn moves
@@ -620,7 +620,7 @@ fn gen_b_pawn_moves(attacks: Attacks, pos: &Position, moves: &mut MoveList) {
     }
 }
 
-fn gen_b_knight_moves(attacks: Attacks, pos: &Position, moves: &mut MoveList) {
+fn gen_b_knight_moves(attacks: &Attacks, pos: &Position, moves: &mut MoveList) {
     let mut bitboard = pos.get_piece_bitboard(Piece::BKnight);
     while let Some(source_square) = bitboard.get_lsb_square() {
         let mut attacks_bb = attacks.get_knight_attacks(source_square) & !pos.b_occupancies;
@@ -657,7 +657,7 @@ fn gen_b_knight_moves(attacks: Attacks, pos: &Position, moves: &mut MoveList) {
     }
 }
 
-fn gen_b_bishop_moves(attacks: Attacks, pos: &Position, moves: &mut MoveList) {
+fn gen_b_bishop_moves(attacks: &Attacks, pos: &Position, moves: &mut MoveList) {
     let mut bitboard = pos.get_piece_bitboard(Piece::BBishop);
     while let Some(source_square) = bitboard.get_lsb_square() {
         let mut attacks_bb =
@@ -695,7 +695,7 @@ fn gen_b_bishop_moves(attacks: Attacks, pos: &Position, moves: &mut MoveList) {
     }
 }
 
-fn gen_b_rook_moves(attacks: Attacks, pos: &Position, moves: &mut MoveList) {
+fn gen_b_rook_moves(attacks: &Attacks, pos: &Position, moves: &mut MoveList) {
     let mut bitboard = pos.get_piece_bitboard(Piece::BRook);
     while let Some(source_square) = bitboard.get_lsb_square() {
         let mut attacks_bb =
@@ -733,7 +733,7 @@ fn gen_b_rook_moves(attacks: Attacks, pos: &Position, moves: &mut MoveList) {
     }
 }
 
-fn gen_b_queen_moves(attacks: Attacks, pos: &Position, moves: &mut MoveList) {
+fn gen_b_queen_moves(attacks: &Attacks, pos: &Position, moves: &mut MoveList) {
     let mut bitboard = pos.get_piece_bitboard(Piece::BQueen);
     while let Some(source_square) = bitboard.get_lsb_square() {
         let mut attacks_bb =
@@ -770,7 +770,7 @@ fn gen_b_queen_moves(attacks: Attacks, pos: &Position, moves: &mut MoveList) {
     }
 }
 
-fn gen_b_king_moves(attacks: Attacks, pos: &Position, moves: &mut MoveList) {
+fn gen_b_king_moves(attacks: &Attacks, pos: &Position, moves: &mut MoveList) {
     let mut bitboard = pos.get_piece_bitboard(Piece::BKing);
     while let Some(source_square) = bitboard.get_lsb_square() {
         let mut attacks_bb = attacks.get_king_attacks(source_square) & !pos.b_occupancies;

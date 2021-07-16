@@ -6,7 +6,7 @@ use std::{
 
 use crate::{
     attacks::Attacks,
-    move_gen::{self, MoveGen},
+    move_gen,
     move_list::{Move, MoveList},
     position::Position,
     square::Square,
@@ -14,7 +14,7 @@ use crate::{
 };
 
 pub fn uci_loop() {
-    let move_gen = MoveGen::new(Attacks::gen());
+    let attacks = Attacks::gen();
     let mut pos: Position;
     println!("id name ARCE");
     println!("id name Ian Smith");
@@ -32,12 +32,12 @@ pub fn uci_loop() {
             println!("readyok");
             continue;
         } else if input.starts_with("position") {
-            match parse_position(&input, &move_gen) {
+            match parse_position(&input, &attacks) {
                 Some(p) => pos = p,
                 None => (),
             };
         } else if input.starts_with("ucinewgame") {
-            pos = parse_position("position startpos", &move_gen).unwrap();
+            pos = parse_position("position startpos", &attacks).unwrap();
         } else if input.starts_with("go") {
             let _ = parse_go(&input);
         } else if input.starts_with("quit") {
@@ -72,7 +72,7 @@ pub fn parse_move(move_str: &str, move_list: &MoveList) -> Result<Move, ()> {
     Err(())
 }
 
-pub fn parse_position(uci_str: &str, move_gen: &MoveGen) -> Option<Position> {
+pub fn parse_position(uci_str: &str, attacks: &Attacks) -> Option<Position> {
     // Check if string has correct prefix
     let pos_str = uci_str.strip_prefix("position ")?;
     // Check whether position is standard start position or FEN
@@ -83,8 +83,8 @@ pub fn parse_position(uci_str: &str, move_gen: &MoveGen) -> Option<Position> {
         if let Some(moves_str) = moves_str.strip_prefix(" moves ") {
             // Make moves
             for mov in moves_str.split_ascii_whitespace() {
-                if let Ok(mov) = parse_move(mov, &move_gen.generate_moves(&pos)) {
-                    if !pos.make_move(mov, &move_gen.attacks) {
+                if let Ok(mov) = parse_move(mov, &move_gen::generate_moves(attacks, &pos)) {
+                    if !pos.make_move(mov, attacks) {
                         return None;
                     }
                 } else {
@@ -102,8 +102,8 @@ pub fn parse_position(uci_str: &str, move_gen: &MoveGen) -> Option<Position> {
                 let mut pos = parse_fen(fen)?;
                 // Make moves
                 for mov in moves_str.split_ascii_whitespace() {
-                    if let Ok(mov) = parse_move(mov, &move_gen.generate_moves(&pos)) {
-                        if !pos.make_move(mov, &move_gen.attacks) {
+                    if let Ok(mov) = parse_move(mov, &move_gen::generate_moves(attacks, &pos)) {
+                        if !pos.make_move(mov, attacks) {
                             return None;
                         }
                     } else {
