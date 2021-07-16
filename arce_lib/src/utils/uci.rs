@@ -1,4 +1,8 @@
-use std::{convert::TryFrom, num::NonZeroU8};
+use std::{
+    convert::TryFrom,
+    io::{stdin, BufRead, Read},
+    num::NonZeroU8,
+};
 
 use crate::{
     attacks::Attacks,
@@ -8,6 +12,43 @@ use crate::{
     square::Square,
     utils::fen::{parse_fen, START_POSITION},
 };
+
+pub fn uci_loop() {
+    let move_gen = MoveGen::new(Attacks::gen());
+    let mut pos: Position;
+    println!("id name ARCE");
+    println!("id name Ian Smith");
+    println!("uciok");
+
+    let mut input = String::new();
+    loop {
+        input.clear();
+        // Get user/GUI input
+        if let Err(_) = stdin().lock().read_line(&mut input) {
+            continue;
+        }
+
+        if input.starts_with("isready") {
+            println!("readyok");
+            continue;
+        } else if input.starts_with("position") {
+            match parse_position(&input, &move_gen) {
+                Some(p) => pos = p,
+                None => (),
+            };
+        } else if input.starts_with("ucinewgame") {
+            pos = parse_position("position startpos", &move_gen).unwrap();
+        } else if input.starts_with("go") {
+            let _ = parse_go(&input);
+        } else if input.starts_with("quit") {
+            break;
+        } else if input.starts_with("uci") {
+            println!("id name ARCE");
+            println!("id name Ian Smith");
+            println!("uciok");
+        }
+    }
+}
 
 pub fn parse_move(move_str: &str, move_list: &MoveList) -> Result<Move, ()> {
     if move_str.len() >= 4 {
@@ -94,7 +135,6 @@ pub fn parse_go(go_str: &str) -> Option<()> {
     } else {
         depth = NonZeroU8::new(6);
     }
-    println!("Depth: {:?}", depth);
-    // search_pos()
+    search_pos();
     None
 }
