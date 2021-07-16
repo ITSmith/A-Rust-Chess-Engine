@@ -139,7 +139,7 @@ pub enum Square {
 
 impl Square {
     #[inline]
-    pub fn from_u8_unchecked(square: u8) -> Square {
+    pub const fn from_u8_unchecked(square: u8) -> Square {
         match square {
             0 => Self::A1,
             1 => Self::B1,
@@ -205,12 +205,12 @@ impl Square {
             61 => Self::F8,
             62 => Self::G8,
             63 => Self::H8,
-            _ => panic!("failed to convert u8 to square"),
+            _ => Self::A1,
         }
     }
 
     #[inline]
-    pub fn from_u8(square: u8) -> Option<Square> {
+    pub const fn from_u8(square: u8) -> Option<Square> {
         Some(match square {
             0 => Self::A1,
             1 => Self::B1,

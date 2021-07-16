@@ -1,7 +1,6 @@
 use std::{
     convert::TryFrom,
-    io::{stdin, BufRead, Read},
-    num::NonZeroU8,
+    io::{stdin, BufRead},
 };
 
 use crate::{
@@ -9,13 +8,14 @@ use crate::{
     move_gen,
     move_list::{Move, MoveList},
     position::Position,
+    search::search_pos,
     square::Square,
-    utils::fen::{parse_fen, START_POSITION},
+    utils::fen::{parse_fen, EMPTY_BOARD, START_POSITION},
 };
 
 pub fn uci_loop() {
     let attacks = Attacks::gen();
-    let mut pos: Position;
+    let mut pos = parse_fen(EMPTY_BOARD).unwrap();
     println!("id name ARCE");
     println!("id name Ian Smith");
     println!("uciok");
@@ -24,7 +24,7 @@ pub fn uci_loop() {
     loop {
         input.clear();
         // Get user/GUI input
-        if let Err(_) = stdin().lock().read_line(&mut input) {
+        if stdin().lock().read_line(&mut input).is_err() {
             continue;
         }
 
@@ -32,14 +32,13 @@ pub fn uci_loop() {
             println!("readyok");
             continue;
         } else if input.starts_with("position") {
-            match parse_position(&input, &attacks) {
-                Some(p) => pos = p,
-                None => (),
-            };
+            if let Some(p) = parse_position(&input, &attacks) {
+                pos = p;
+            }
         } else if input.starts_with("ucinewgame") {
             pos = parse_position("position startpos", &attacks).unwrap();
         } else if input.starts_with("go") {
-            let _ = parse_go(&input);
+            let _ = parse_go(&mut pos, &attacks, &input);
         } else if input.starts_with("quit") {
             break;
         } else if input.starts_with("uci") {
@@ -120,7 +119,7 @@ pub fn parse_position(uci_str: &str, attacks: &Attacks) -> Option<Position> {
     }
 }
 
-pub fn parse_go(go_str: &str) -> Option<()> {
+pub fn parse_go(position: &mut Position, attacks: &Attacks, go_str: &str) -> Option<()> {
     let mut go_args = go_str.split_ascii_whitespace();
     if go_args.next()? != "go" {
         return None;
@@ -133,11 +132,6 @@ pub fn parse_go(go_str: &str) -> Option<()> {
             Err(_) => (),
         }
     }
-    search_pos(depth);
+    search_pos(position, attacks, depth);
     None
-}
-
-pub fn search_pos(depth: u8) {
-    // Placeholder
-    println!("bestmove d2d4");
 }

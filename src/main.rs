@@ -26,12 +26,12 @@ fn main() {
 
     // let elapsed = now.elapsed();
     // println!("Elapsed: {:.2?}", elapsed);
-    let debug = true;
+    let debug = false;
     if debug {
         let b =
             parse_fen("rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 0 1").unwrap();
         b.print_board();
-        print!("Score: {}", arce_lib::evaluation::evaluate(b));
+        print!("Score: {}", arce_lib::evaluation::evaluate(&b));
     } else {
         uci_loop();
     }

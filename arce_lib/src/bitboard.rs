@@ -69,12 +69,12 @@ impl BitBoard {
     }
 
     #[inline]
-    pub fn is_empty(self) -> bool {
+    pub const fn is_empty(self) -> bool {
         self.0 == 0
     }
 
     #[inline]
-    pub fn is_not_empty(self) -> bool {
+    pub const fn is_not_empty(self) -> bool {
         self.0 != 0
     }
 

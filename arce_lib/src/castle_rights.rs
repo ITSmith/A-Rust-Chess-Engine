@@ -15,22 +15,22 @@ pub struct CastleRights(u8);
 
 impl CastleRights {
     #[inline]
-    pub fn wk(&self) -> bool {
+    pub const fn wk(&self) -> bool {
         self.0 & 0b0001 != 0
     }
 
     #[inline]
-    pub fn wq(&self) -> bool {
+    pub const fn wq(&self) -> bool {
         self.0 & 0b0010 != 0
     }
 
     #[inline]
-    pub fn bk(&self) -> bool {
+    pub const fn bk(&self) -> bool {
         self.0 & 0b0100 != 0
     }
 
     #[inline]
-    pub fn bq(&self) -> bool {
+    pub const fn bq(&self) -> bool {
         self.0 & 0b1000 != 0
     }
 

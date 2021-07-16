@@ -7,7 +7,7 @@ pub struct MoveList {
 }
 
 impl MoveList {
-    pub fn new() -> MoveList {
+    pub const fn new() -> MoveList {
         MoveList { moves: Vec::new() }
     }
 
@@ -56,13 +56,27 @@ impl Index<usize> for MoveList {
     }
 }
 
+impl IntoIterator for MoveList {
+    type Item = Move;
+
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.moves.into_iter()
+    }
+}
+
 #[derive(Clone, Copy)]
 pub struct Move(u32);
 
 impl Move {
     #[inline]
+    pub const fn empty() -> Move {
+        Move(0)
+    }
+    #[inline]
     #[allow(clippy::too_many_arguments)]
-    pub fn encode(
+    pub const fn encode(
         source_square: Square,
         target_square: Square,
         piece: Piece,
@@ -97,37 +111,37 @@ impl Move {
     }
 
     #[inline]
-    pub fn extract_target(self) -> Square {
+    pub const fn extract_target(self) -> Square {
         Square::from_u8_unchecked(((self.0 & 0xfc0) >> 6) as u8)
     }
 
     #[inline]
-    pub fn extract_piece(self) -> Piece {
+    pub const fn extract_piece(self) -> Piece {
         Piece::from_u8(((self.0 & 0xf000) >> 12) as u8)
     }
 
     #[inline]
-    pub fn extract_promoted_piece(self) -> Piece {
+    pub const fn extract_promoted_piece(self) -> Piece {
         Piece::from_u8(((self.0 & 0xf_0000) >> 16) as u8)
     }
 
     #[inline]
-    pub fn extract_capture(self) -> bool {
+    pub const fn extract_capture(self) -> bool {
         (self.0 & 0x10_0000) != 0
     }
 
     #[inline]
-    pub fn extract_double_push(self) -> bool {
+    pub const fn extract_double_push(self) -> bool {
         (self.0 & 0x20_0000) != 0
     }
 
     #[inline]
-    pub fn extract_en_passant(self) -> bool {
+    pub const fn extract_en_passant(self) -> bool {
         (self.0 & 0x40_0000) != 0
     }
 
     #[inline]
-    pub fn extract_castling(self) -> bool {
+    pub const fn extract_castling(self) -> bool {
         (self.0 & 0x80_0000) != 0
     }
 }

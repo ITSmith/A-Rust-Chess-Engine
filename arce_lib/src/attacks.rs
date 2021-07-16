@@ -110,22 +110,22 @@ impl Attacks {
     }
 
     #[inline]
-    pub fn get_w_pawn_attacks(&self, square: Square) -> BitBoard {
+    pub const fn get_w_pawn_attacks(&self, square: Square) -> BitBoard {
         self.w_pawn[square as usize]
     }
 
     #[inline]
-    pub fn get_b_pawn_attacks(&self, square: Square) -> BitBoard {
+    pub const fn get_b_pawn_attacks(&self, square: Square) -> BitBoard {
         self.b_pawn[square as usize]
     }
 
     #[inline]
-    pub fn get_knight_attacks(&self, square: Square) -> BitBoard {
+    pub const fn get_knight_attacks(&self, square: Square) -> BitBoard {
         self.knight[square as usize]
     }
 
     #[inline]
-    pub fn get_king_attacks(&self, square: Square) -> BitBoard {
+    pub const fn get_king_attacks(&self, square: Square) -> BitBoard {
         self.king[square as usize]
     }
 

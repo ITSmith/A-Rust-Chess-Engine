@@ -52,7 +52,7 @@ pub enum Piece {
 }
 
 impl Piece {
-    pub fn from_u8(value: u8) -> Piece {
+    pub const fn from_u8(value: u8) -> Piece {
         match value {
             0 => Piece::WPawn,
             1 => Piece::WKnight,
