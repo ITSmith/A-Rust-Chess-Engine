@@ -66,7 +66,7 @@ impl IntoIterator for MoveList {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub struct Move(u32);
 
 impl Move {
