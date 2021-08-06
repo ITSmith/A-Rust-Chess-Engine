@@ -1,4 +1,4 @@
-# ARCE (A Rust Chess Engine)
+# A Rust Chess Engine
 This chess engine is based off information gathered from the [Chess Programming Wiki](https://www.chessprogramming.org/Main_Page) and a C chess engine [tutorial](https://www.youtube.com/playlist?list=PLmN0neTso3Jxh8ZIylk74JpwfiWNI76Cs).
 
 ## Board Representation
